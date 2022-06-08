@@ -12,9 +12,10 @@ const Canvas = styled.canvas`
 
 interface Props {
   maze?: Maze;
+  scale?: number;
 }
 
-const MazeCanvas: FC<Props> = ({ maze = [] }) => {
+const MazeCanvas: FC<Props> = ({ maze = [], scale = 16 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -40,12 +41,12 @@ const MazeCanvas: FC<Props> = ({ maze = [] }) => {
             if (cell === MazeCellType.Exit) {
               ctx.fillStyle = '#FF0000';
             }
-            ctx.fillRect(x * 16, y * 16, 16, 16);
+            ctx.fillRect(x * scale, y * scale, scale, scale);
           });
         });
       }
     }
-  }, [canvasRef, maze]);
+  }, [canvasRef, maze, scale]);
   return (
     <Wrapper>
       <Canvas ref={canvasRef} />
