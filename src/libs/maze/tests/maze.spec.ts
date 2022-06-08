@@ -2,7 +2,7 @@ import { mazeGenerator } from '../maze';
 import {
   Maze,
   MazeCell,
-  MazeCellType,
+  Cell,
   MazeGeneratorOptions,
   Direction,
 } from './../types';
@@ -34,23 +34,23 @@ describe('mazeGenerator()', () => {
     const gen = mazeGenerator(mazeOptions);
 
     const maze1 = gen.next().value as Maze;
-    expect(queryMaze(maze1, MazeCellType.Entrance)).toHaveLength(0);
-    expect(queryMaze(maze1, MazeCellType.Exit)).toHaveLength(0);
+    expect(queryMaze(maze1, Cell.Entrance)).toHaveLength(0);
+    expect(queryMaze(maze1, Cell.Exit)).toHaveLength(0);
 
     const maze2 = gen.next().value as Maze;
-    expect(queryMaze(maze2, MazeCellType.Entrance)).toHaveLength(1);
-    expect(queryMaze(maze2, MazeCellType.Exit)).toHaveLength(0);
+    expect(queryMaze(maze2, Cell.Entrance)).toHaveLength(1);
+    expect(queryMaze(maze2, Cell.Exit)).toHaveLength(0);
 
     const maze3 = gen.next().value as Maze;
-    expect(queryMaze(maze3, MazeCellType.Entrance)).toHaveLength(1);
-    expect(queryMaze(maze3, MazeCellType.Exit)).toHaveLength(1);
+    expect(queryMaze(maze3, Cell.Entrance)).toHaveLength(1);
+    expect(queryMaze(maze3, Cell.Exit)).toHaveLength(1);
 
-    const entrance = queryMaze(maze3, MazeCellType.Entrance).pop();
-    const exit = queryMaze(maze3, MazeCellType.Exit).pop();
+    const entrance = queryMaze(maze3, Cell.Entrance).pop();
+    const exit = queryMaze(maze3, Cell.Exit).pop();
 
-    expect(entrance).toEqual({ type: MazeCellType.Entrance, x: 3, y: 0 });
+    expect(entrance).toEqual({ type: Cell.Entrance, x: 3, y: 0 });
     expect(exit).toEqual({
-      type: MazeCellType.Exit,
+      type: Cell.Exit,
       x: 5,
       y: mazeOptions.height - 1,
     });
@@ -66,12 +66,12 @@ describe('mazeGenerator()', () => {
     gen.next();
     const maze = gen.next().value as Maze;
 
-    const entrance = queryMaze(maze, MazeCellType.Entrance).pop();
-    const exit = queryMaze(maze, MazeCellType.Exit).pop();
+    const entrance = queryMaze(maze, Cell.Entrance).pop();
+    const exit = queryMaze(maze, Cell.Exit).pop();
 
-    expect(entrance).toEqual({ type: MazeCellType.Entrance, x: 0, y: 2 });
+    expect(entrance).toEqual({ type: Cell.Entrance, x: 0, y: 2 });
     expect(exit).toEqual({
-      type: MazeCellType.Exit,
+      type: Cell.Exit,
       x: mazeOptions.width - 1,
       y: 6,
     });
@@ -87,16 +87,16 @@ describe('mazeGenerator()', () => {
     gen.next();
     const maze = gen.next().value as Maze;
 
-    const entrance = queryMaze(maze, MazeCellType.Entrance).pop();
-    const exit = queryMaze(maze, MazeCellType.Exit).pop();
+    const entrance = queryMaze(maze, Cell.Entrance).pop();
+    const exit = queryMaze(maze, Cell.Exit).pop();
 
     expect(entrance).toEqual({
-      type: MazeCellType.Entrance,
+      type: Cell.Entrance,
       x: mazeOptions.width - 1,
       y: 1,
     });
     expect(exit).toEqual({
-      type: MazeCellType.Exit,
+      type: Cell.Exit,
       x: 0,
       y: 3,
     });
@@ -112,16 +112,16 @@ describe('mazeGenerator()', () => {
     gen.next();
     const maze = gen.next().value as Maze;
 
-    const entrance = queryMaze(maze, MazeCellType.Entrance).pop();
-    const exit = queryMaze(maze, MazeCellType.Exit).pop();
+    const entrance = queryMaze(maze, Cell.Entrance).pop();
+    const exit = queryMaze(maze, Cell.Exit).pop();
 
     expect(entrance).toEqual({
-      type: MazeCellType.Entrance,
+      type: Cell.Entrance,
       x: 5,
       y: mazeOptions.height - 1,
     });
     expect(exit).toEqual({
-      type: MazeCellType.Exit,
+      type: Cell.Exit,
       x: 2,
       y: 0,
     });
@@ -139,7 +139,23 @@ describe('mazeGenerator()', () => {
     gen.next();
     gen.next();
     const maze = gen.next().value as Maze;
-    const entrance = queryMaze(maze, MazeCellType.Entrance).pop() as MazeCell;
-    expect(maze[entrance.y - 1][entrance.x]).toEqual(MazeCellType.Empty);
+    const entrance = queryMaze(maze, Cell.Entrance).pop() as MazeCell;
+    expect(maze[entrance.y - 1][entrance.x]).toEqual(Cell.Empty);
+  });
+
+  it('Should clear wall on right of entrance', () => {
+    makeDecissionMock
+      .mockReturnValueOnce(Direction.Bottom)
+      .mockReturnValueOnce(5)
+      .mockReturnValueOnce(2)
+      .mockReturnValueOnce(Direction.Right);
+
+    const gen = mazeGenerator(mazeOptions);
+    gen.next();
+    gen.next();
+    gen.next();
+    const maze = gen.next().value as Maze;
+    const entrance = queryMaze(maze, Cell.Entrance).pop() as MazeCell;
+    expect(maze[entrance.y][entrance.x + 1]).toEqual(Cell.Empty);
   });
 });

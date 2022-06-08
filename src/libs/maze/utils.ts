@@ -2,13 +2,13 @@ import {
   Maze,
   MazeDimensions,
   MazeCell,
-  MazeCellType,
+  Cell,
   MazeCoordinate,
   Direction,
 } from './types';
 
 export const createEmptyMaze = ({ width, height }: MazeDimensions): Maze =>
-  new Array(height).fill(new Array(width).fill(MazeCellType.Wall));
+  new Array(height).fill(new Array(width).fill(Cell.Wall));
 
 export const updateMazeCell = (maze: Maze, cellToUpdate: MazeCell): Maze => {
   const mazeUpdate = [...maze.map((row) => [...row])];
@@ -17,7 +17,7 @@ export const updateMazeCell = (maze: Maze, cellToUpdate: MazeCell): Maze => {
   return mazeUpdate;
 };
 
-export const queryMaze = (maze: Maze, queryType: MazeCellType): MazeCell[] => {
+export const queryMaze = (maze: Maze, queryType: Cell): MazeCell[] => {
   const results: MazeCell[] = [];
   maze.forEach((yRow, y) => {
     yRow.forEach((type, x) => {
@@ -33,12 +33,9 @@ export const queryMaze = (maze: Maze, queryType: MazeCellType): MazeCell[] => {
   return results;
 };
 
-export const getMazeCellType = (
-  maze: Maze,
-  { x, y }: MazeCoordinate
-): MazeCellType => {
+export const getCell = (maze: Maze, { x, y }: MazeCoordinate): Cell => {
   if (y < 0 || y >= maze.length || x < 0 || x >= maze[0].length) {
-    return MazeCellType.Outside;
+    return Cell.Outside;
   }
   return maze[y][x];
 };
@@ -48,83 +45,67 @@ export const queryPossibleMovements = (
   { x, y }: MazeCoordinate
 ): Direction[] => {
   const result: Direction[] = [];
-  const free = MazeCellType.Wall;
+  const free = Cell.Wall;
+  const freeSpaces = [free, Cell.Outside, Cell.Exit];
   // top
-  if (getMazeCellType(maze, { x, y: y - 1 }) === free) {
-    [free, MazeCellType.Outside].includes(
-      getMazeCellType(maze, { x: x - 1, y: y - 1 })
-    ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x + 1, y: y - 1 })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x - 1, y: y - 2 })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x, y: y - 2 })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x + 1, y: y - 2 })
-      ) &&
+  if ([free, Cell.Exit].includes(getCell(maze, { x, y: y - 1 }))) {
+    [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y - 1 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y - 1 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y - 2 })) &&
+      [...freeSpaces].includes(getCell(maze, { x, y: y - 2 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y - 2 })) &&
       result.push(Direction.Top);
   }
   // right
-  if (getMazeCellType(maze, { x: x + 1, y }) === free) {
-    [free, MazeCellType.Outside].includes(
-      getMazeCellType(maze, { x: x + 1, y: y - 1 })
-    ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x + 1, y: y + 1 })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x + 2, y: y - 1 })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x + 2, y })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x + 2, y: y + 1 })
-      ) &&
+  if ([free, Cell.Exit].includes(getCell(maze, { x: x + 1, y }))) {
+    [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y - 1 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y + 1 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x + 2, y: y - 1 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x + 2, y })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x + 2, y: y + 1 })) &&
       result.push(Direction.Right);
   }
   // bottom
-  if (getMazeCellType(maze, { x, y: y + 1 }) === free) {
-    [free, MazeCellType.Outside].includes(
-      getMazeCellType(maze, { x: x - 1, y: y + 1 })
-    ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x + 1, y: y + 1 })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x - 1, y: y + 2 })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x, y: y + 2 })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x + 1, y: y + 2 })
-      ) &&
+  if ([free, Cell.Exit].includes(getCell(maze, { x, y: y + 1 }))) {
+    [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y + 1 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y + 1 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y + 2 })) &&
+      [...freeSpaces].includes(getCell(maze, { x, y: y + 2 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y + 2 })) &&
       result.push(Direction.Bottom);
   }
   // left
-  if (getMazeCellType(maze, { x: x - 1, y }) === free) {
-    [free, MazeCellType.Outside].includes(
-      getMazeCellType(maze, { x: x - 1, y: y - 1 })
-    ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x - 1, y: y + 1 })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x - 2, y: y - 1 })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x - 2, y })
-      ) &&
-      [free, MazeCellType.Outside].includes(
-        getMazeCellType(maze, { x: x - 2, y: y + 1 })
-      ) &&
+  if ([free, Cell.Exit].includes(getCell(maze, { x: x - 1, y }))) {
+    [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y - 1 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y + 1 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x - 2, y: y - 1 })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x - 2, y })) &&
+      [...freeSpaces].includes(getCell(maze, { x: x - 2, y: y + 1 })) &&
       result.push(Direction.Left);
   }
 
   return result;
+};
+
+export const queryForEmptySpace = (
+  maze: Maze,
+  { x, y }: MazeCoordinate
+): Direction[] => {
+  const results: Direction[] = [];
+
+  const emptySpaces = [Cell.Empty, Cell.Exit, Cell.Entrance];
+
+  if ([...emptySpaces].includes(getCell(maze, { x, y: y - 1 }))) {
+    results.push(Direction.Top);
+  }
+  if ([...emptySpaces].includes(getCell(maze, { x: x + 1, y }))) {
+    results.push(Direction.Right);
+  }
+  if ([...emptySpaces].includes(getCell(maze, { x, y: y + 1 }))) {
+    results.push(Direction.Bottom);
+  }
+  if ([...emptySpaces].includes(getCell(maze, { x: x - 1, y }))) {
+    results.push(Direction.Left);
+  }
+  return results;
 };

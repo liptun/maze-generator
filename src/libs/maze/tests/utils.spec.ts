@@ -1,9 +1,9 @@
-import { queryPossibleMovements } from './../utils';
+import { queryPossibleMovements, queryForEmptySpace } from './../utils';
 import {
   Maze,
   MazeDimensions,
   MazeCell,
-  MazeCellType,
+  Cell,
   Direction,
 } from '../types';
 import { createEmptyMaze, updateMazeCell, queryMaze } from '../utils';
@@ -22,14 +22,14 @@ describe('createEmptyMaze()', () => {
 
   it('Each cell of new maze should be wall', () => {
     const maze = createEmptyMaze(mazeDimensions);
-    maze.forEach((x) => x.forEach((y) => expect(y).toEqual(MazeCellType.Wall)));
+    maze.forEach((x) => x.forEach((y) => expect(y).toEqual(Cell.Wall)));
   });
 });
 
 describe('updateMazeCell()', () => {
   it('Should update one cell and return new maze array', () => {
     const maze = createEmptyMaze(mazeDimensions);
-    const cellToUpdate: MazeCell = { x: 3, y: 4, type: MazeCellType.Empty };
+    const cellToUpdate: MazeCell = { x: 3, y: 4, type: Cell.Empty };
     const mazeUpdated = updateMazeCell(maze, cellToUpdate);
 
     expect(maze).not.toEqual(mazeUpdated);
@@ -41,7 +41,7 @@ describe('updateMazeCell()', () => {
 describe('queryMaze', () => {
   it('Should query all wall elements', () => {
     const maze = createEmptyMaze(mazeDimensions);
-    const query = MazeCellType.Wall;
+    const query = Cell.Wall;
     const results = queryMaze(maze, query);
     expect(results).toHaveLength(64);
     results.forEach((result) => expect(result.type).toEqual(query));
@@ -52,9 +52,9 @@ describe('queryMaze', () => {
     maze = updateMazeCell(maze, {
       x: 0,
       y: 0,
-      type: MazeCellType.Entrance,
+      type: Cell.Entrance,
     });
-    const query = MazeCellType.Entrance;
+    const query = Cell.Entrance;
     const results = queryMaze(maze, query);
     expect(results).toHaveLength(1);
     results.forEach((result) => expect(result.type).toEqual(query));
@@ -71,7 +71,7 @@ describe('queryPossibleMovements()', () => {
 
   it('Possible moves should be top, left and right', () => {
     let maze = createEmptyMaze(mazeDimensions);
-    maze = updateMazeCell(maze, { x: 4, y: 7, type: MazeCellType.Entrance });
+    maze = updateMazeCell(maze, { x: 4, y: 7, type: Cell.Entrance });
     const possibleMovements = queryPossibleMovements(maze, { x: 4, y: 6 });
     expect(possibleMovements).toHaveLength(3);
     expect(possibleMovements).toEqual([
@@ -79,5 +79,23 @@ describe('queryPossibleMovements()', () => {
       Direction.Right,
       Direction.Left,
     ]);
+  });
+});
+
+describe('queryForEmptySpace', () => {
+  it('Should return four possible directions', () => {
+    let maze = createEmptyMaze(mazeDimensions);
+    maze = updateMazeCell(maze, { x: 2, y: 3, type: Cell.Empty });
+    maze = updateMazeCell(maze, { x: 4, y: 3, type: Cell.Empty });
+    maze = updateMazeCell(maze, { x: 3, y: 2, type: Cell.Empty });
+    maze = updateMazeCell(maze, { x: 3, y: 4, type: Cell.Empty });
+    expect(queryForEmptySpace(maze, { x: 3, y: 3 })).toHaveLength(4);
+  });
+
+  it('Should return two possible directions', () => {
+    let maze = createEmptyMaze(mazeDimensions);
+    maze = updateMazeCell(maze, { x: 2, y: 3, type: Cell.Empty });
+    maze = updateMazeCell(maze, { x: 3, y: 4, type: Cell.Empty });
+    expect(queryForEmptySpace(maze, { x: 3, y: 3 })).toHaveLength(2);
   });
 });

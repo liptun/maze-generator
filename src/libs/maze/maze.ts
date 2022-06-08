@@ -2,7 +2,7 @@ import { makeDecision } from './decision';
 import { noiseGenerator } from './noise';
 import {
   MazeCell,
-  MazeCellType,
+  Cell,
   MazeCoordinate,
   MazeGeneratorOptions,
   Direction,
@@ -11,13 +11,12 @@ import {
   createEmptyMaze,
   updateMazeCell,
   queryPossibleMovements,
+  getCell,
+  queryForEmptySpace,
+  queryMaze,
 } from './utils';
 
-export function* mazeGenerator<Maze>({
-  width,
-  height,
-  seed,
-}: MazeGeneratorOptions) {
+export function* mazeGenerator({ width, height, seed }: MazeGeneratorOptions) {
   // create noise generator
   const noise = noiseGenerator(seed);
   // create empty maze
@@ -47,7 +46,7 @@ export function* mazeGenerator<Maze>({
   const mazeEntrance: MazeCell = {
     x: 0,
     y: 0,
-    type: MazeCellType.Entrance,
+    type: Cell.Entrance,
   };
 
   if ([Direction.Top, Direction.Bottom].includes(entranceWall)) {
@@ -66,7 +65,7 @@ export function* mazeGenerator<Maze>({
   const mazeExit: MazeCell = {
     x: 0,
     y: 0,
-    type: MazeCellType.Exit,
+    type: Cell.Exit,
   };
 
   const exitOffsetOptions = [...entranceOffsetOptions];
@@ -86,10 +85,8 @@ export function* mazeGenerator<Maze>({
 
   // start walking in random possible direction until no move is possible
   const cursor: MazeCoordinate = { x: mazeEntrance.x, y: mazeEntrance.y };
-  // const cursorPrev: MazeCoordinate = { ...cursor };
-  const cursorHistory: MazeCoordinate[] = [];
-  while (true) {
-    cursorHistory.push({ ...cursor });
+  let mazeIsReady = false;
+  while (!mazeIsReady) {
     const possibleMoves = queryPossibleMovements(maze, cursor);
     if (possibleMoves.length > 0) {
       const move = makeDecision(possibleMoves, noise.next().value);
@@ -99,16 +96,53 @@ export function* mazeGenerator<Maze>({
       if ([Direction.Right, Direction.Left].includes(move)) {
         cursor.x += move === Direction.Right ? 1 : -1;
       }
-      maze = updateMazeCell(maze, { ...cursor, type: MazeCellType.Empty });
+      if (![Cell.Exit].includes(getCell(maze, cursor))) {
+        maze = updateMazeCell(maze, { ...cursor, type: Cell.Empty });
+      }
     } else {
       // mark current cell as visited and move cursor to previous position
+      let replacement = Cell.EmptyVisited;
+      if (getCell(maze, { ...cursor }) === Cell.Exit) {
+        replacement = Cell.ExitVisited;
+      }
+      if (getCell(maze, { ...cursor }) === Cell.Entrance) {
+        replacement = Cell.EntranceVisited;
+      }
+
       maze = updateMazeCell(maze, {
         ...cursor,
-        type: MazeCellType.EmptyVisited,
+        type: replacement,
       });
-      cursor.x = cursorHistory[cursorHistory.length - 2].x
-      cursor.y = cursorHistory[cursorHistory.length - 2].y
+
+      const emptySpaces = queryForEmptySpace(maze, cursor);
+      if (emptySpaces.length === 1) {
+        const emptySpaceDirection = emptySpaces.pop() as Direction;
+        if ([Direction.Top, Direction.Bottom].includes(emptySpaceDirection)) {
+          cursor.y += emptySpaceDirection === Direction.Top ? -1 : 1;
+        }
+        if ([Direction.Right, Direction.Left].includes(emptySpaceDirection)) {
+          cursor.x += emptySpaceDirection === Direction.Right ? 1 : -1;
+        }
+      } else {
+        /// maze is ready
+        yield maze;
+        mazeIsReady = true;
+      }
     }
     yield maze;
   }
+  // replace all visited cells with empty cells
+  const visited = queryMaze(maze, Cell.EmptyVisited);
+  visited.forEach((cell) => {
+    maze = updateMazeCell(maze, { ...cell, type: Cell.Empty });
+  });
+  const exit = queryMaze(maze, Cell.ExitVisited).pop();
+  if (exit) {
+    maze = updateMazeCell(maze, { ...exit, type: Cell.Exit });
+  }
+  const entrance = queryMaze(maze, Cell.EntranceVisited).pop();
+  if (entrance) {
+    maze = updateMazeCell(maze, { ...entrance, type: Cell.Entrance });
+  }
+  yield maze;
 }
