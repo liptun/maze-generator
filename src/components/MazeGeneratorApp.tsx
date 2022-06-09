@@ -126,7 +126,6 @@ const MazeGeneratorApp: FC = () => {
   const onRandomSeedHandle = useCallback(() => {
     const newSeed = String(Math.random()).substring(2);
     setSeed(newSeed);
-    window.location.hash = newSeed;
   }, []);
 
   const onAnimateHandle = useCallback(() => {
@@ -162,13 +161,6 @@ const MazeGeneratorApp: FC = () => {
     onGenerateHandle();
   }, [onGenerateHandle, onRandomSeedHandle]);
 
-  useEffect(() => {
-    const urlHash = window.location.hash;
-    if (urlHash) {
-      setSeed(urlHash.substring(1));
-      onGenerateHandle();
-    }
-  }, [onGenerateHandle]);
 
   return (
     <Wrapper>
