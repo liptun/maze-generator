@@ -12,10 +12,16 @@ const Wrapper = styled.div`
   font-size: 16px;
   grid-template-columns: auto 20%;
   min-height: 95vh;
+  @media (max-width: 1000px) {
+    grid-template-columns: auto;
+  }
 `;
 
 const MazeWrapper = styled.div`
   padding: 15px;
+  @media (max-width: 1000px) {
+    order: 2;
+  }
 `;
 
 const OptionsWrapper = styled.div`
@@ -117,6 +123,12 @@ const MazeGeneratorApp: FC = () => {
     }
   }, [wrapperRef]);
 
+  const onRandomSeedHandle = useCallback(() => {
+    const newSeed = String(Math.random()).substring(2);
+    setSeed(newSeed);
+    window.location.hash = newSeed;
+  }, []);
+
   const onAnimateHandle = useCallback(() => {
     setIsAnimating(true);
     for (let i = 0; i < history.length; i++) {
@@ -145,6 +157,19 @@ const MazeGeneratorApp: FC = () => {
     setIsGenerating(false);
   }, [seed, width, height]);
 
+  const onRandomSeedAndGenerateHandle = useCallback(() => {
+    onRandomSeedHandle();
+    onGenerateHandle();
+  }, [onGenerateHandle, onRandomSeedHandle]);
+
+  useEffect(() => {
+    const urlHash = window.location.hash;
+    if (urlHash) {
+      setSeed(urlHash.substring(1));
+      onGenerateHandle();
+    }
+  }, [onGenerateHandle]);
+
   return (
     <Wrapper>
       <MazeWrapper ref={wrapperRef}>
@@ -160,6 +185,15 @@ const MazeGeneratorApp: FC = () => {
         <InputWrapper>
           <label>Seed:</label>
           <Input value={seed} onChange={(e) => setSeed(e.target.value)} />
+          <InputWrapperHorizontal>
+            <Button onClick={() => onRandomSeedHandle()}>random seed</Button>
+            <GenerateButton
+              onClick={() => onRandomSeedAndGenerateHandle()}
+              disabled={isGenerating}
+            >
+              random seed & generate
+            </GenerateButton>
+          </InputWrapperHorizontal>
         </InputWrapper>
         <InputWrapperHorizontal>
           <Button

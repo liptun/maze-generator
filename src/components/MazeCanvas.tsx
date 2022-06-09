@@ -4,6 +4,8 @@ import { Maze, Cell } from '../libs/maze/types';
 
 const Wrapper = styled.div`
   padding: 1px;
+  display: flex;
+  justify-content: center;
 `;
 const Canvas = styled.canvas`
   outline: 1px solid #ccc;
@@ -16,7 +18,12 @@ interface Props {
   height?: number;
 }
 
-const MazeCanvas: FC<Props> = ({ maze = [], scale = 16, width = 600, height = 600 }) => {
+const MazeCanvas: FC<Props> = ({
+  maze = [],
+  scale = 16,
+  width = 600,
+  height = 600,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
