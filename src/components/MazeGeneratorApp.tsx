@@ -276,7 +276,7 @@ const MazeGeneratorApp: FC = () => {
               <input
                 type="range"
                 min={1}
-                max={10}
+                max={32}
                 value={animationDuration}
                 onChange={(e) => setAnimationDuration(Number(e.target.value))}
               />
@@ -294,7 +294,7 @@ const MazeGeneratorApp: FC = () => {
           <input
             value={scale}
             type="range"
-            max={16}
+            max={64}
             min={1}
             onChange={(e) => setScale(Number(e.target.value))}
           />
