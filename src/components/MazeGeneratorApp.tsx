@@ -10,7 +10,7 @@ const Wrapper = styled.div`
   display: grid;
   grid-gap: 5px;
   font-size: 16px;
-  grid-template-columns: auto 20%;
+  grid-template-columns: auto 400px;
   min-height: 95vh;
   @media (max-width: 1000px) {
     grid-template-columns: auto;
