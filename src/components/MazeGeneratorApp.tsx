@@ -156,12 +156,6 @@ const MazeGeneratorApp: FC = () => {
     setIsGenerating(false);
   }, [seed, width, height]);
 
-  const onRandomSeedAndGenerateHandle = useCallback(() => {
-    onRandomSeedHandle();
-    onGenerateHandle();
-  }, [onGenerateHandle, onRandomSeedHandle]);
-
-
   return (
     <Wrapper>
       <MazeWrapper ref={wrapperRef}>
@@ -177,15 +171,7 @@ const MazeGeneratorApp: FC = () => {
         <InputWrapper>
           <label>Seed:</label>
           <Input value={seed} onChange={(e) => setSeed(e.target.value)} />
-          <InputWrapperHorizontal>
-            <Button onClick={() => onRandomSeedHandle()}>random seed</Button>
-            <GenerateButton
-              onClick={() => onRandomSeedAndGenerateHandle()}
-              disabled={isGenerating}
-            >
-              random seed & generate
-            </GenerateButton>
-          </InputWrapperHorizontal>
+          <Button onClick={() => onRandomSeedHandle()}>random seed</Button>
         </InputWrapper>
         <InputWrapperHorizontal>
           <Button
