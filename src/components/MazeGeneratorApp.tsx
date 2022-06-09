@@ -11,6 +11,7 @@ const Wrapper = styled.div`
   grid-gap: 5px;
   font-size: 16px;
   grid-template-columns: auto 20%;
+  min-height: 95vh;
 `;
 
 const MazeWrapper = styled.div`
@@ -37,6 +38,7 @@ const InputWrapperHorizontal = styled.div`
   display: grid;
   grid-auto-flow: column;
   grid-gap: 15px;
+  margin-bottom: 15px;
 `;
 
 const inputStyle = css`
@@ -108,10 +110,9 @@ const MazeGeneratorApp: FC = () => {
 
   useEffect(() => {
     if (wrapperRef.current) {
-      // setRenderSize(wrapperRef.current.clientWidth - 30);
       setRenderSize({
-        width: wrapperRef.current.clientWidth - 30,
-        height: wrapperRef.current.clientHeight,
+        width: wrapperRef.current.clientWidth - 50,
+        height: wrapperRef.current.clientHeight - 50,
       });
     }
   }, [wrapperRef]);
@@ -160,6 +161,48 @@ const MazeGeneratorApp: FC = () => {
           <label>Seed:</label>
           <Input value={seed} onChange={(e) => setSeed(e.target.value)} />
         </InputWrapper>
+        <InputWrapperHorizontal>
+          <Button
+            onClick={() => {
+              setWidth(8);
+              setHeight(8);
+            }}
+          >
+            8
+          </Button>
+          <Button
+            onClick={() => {
+              setWidth(16);
+              setHeight(16);
+            }}
+          >
+            16
+          </Button>
+          <Button
+            onClick={() => {
+              setWidth(32);
+              setHeight(32);
+            }}
+          >
+            32
+          </Button>
+          <Button
+            onClick={() => {
+              setWidth(64);
+              setHeight(64);
+            }}
+          >
+            64
+          </Button>
+          <Button
+            onClick={() => {
+              setWidth(128);
+              setHeight(128);
+            }}
+          >
+            128
+          </Button>
+        </InputWrapperHorizontal>
         <InputWrapper>
           <label>Width: {width}</label>
           <input
@@ -185,11 +228,10 @@ const MazeGeneratorApp: FC = () => {
             Generate
           </GenerateButton>
         </InputWrapper>
-
         {history.length > 0 && (
           <InputWrapper>
             <label>
-              History: {historySelector + 1} from {history.length}
+              Step {historySelector + 1} from {history.length}
             </label>
             <input
               type="range"
@@ -214,7 +256,6 @@ const MazeGeneratorApp: FC = () => {
             </InputWrapperHorizontal>
           </InputWrapper>
         )}
-
         {history.length > 0 && (
           <>
             <Title>Animate</Title>
@@ -229,7 +270,6 @@ const MazeGeneratorApp: FC = () => {
               />
             </InputWrapper>
             <InputWrapper>
-              isAnimating: {isAnimating ? 'anim' : 'nope'}
               <AnimateButton onClick={onAnimateHandle} disabled={isAnimating}>
                 Animate
               </AnimateButton>

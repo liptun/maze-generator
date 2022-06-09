@@ -115,7 +115,7 @@ export function* mazeGenerator({ width, height, seed }: MazeGeneratorOptions) {
       });
 
       const emptySpaces = queryForEmptySpace(maze, cursor);
-      if (emptySpaces.length === 1) {
+      if (emptySpaces.length >= 1) {
         const emptySpaceDirection = emptySpaces.pop() as Direction;
         if ([Direction.Top, Direction.Bottom].includes(emptySpaceDirection)) {
           cursor.y += emptySpaceDirection === Direction.Top ? -1 : 1;

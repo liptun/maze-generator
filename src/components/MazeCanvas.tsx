@@ -6,8 +6,7 @@ const Wrapper = styled.div`
   padding: 1px;
 `;
 const Canvas = styled.canvas`
-  outline: 1px solid black;
-  /* width: 100%; */
+  outline: 1px solid #ccc;
 `;
 
 interface Props {
