@@ -84,45 +84,55 @@ export function* mazeGenerator({ width, height, seed }: MazeGeneratorOptions) {
   yield maze;
 
   // start walking in random possible direction until no move is possible
-  const cursor: MazeCoordinate = { x: mazeEntrance.x, y: mazeEntrance.y };
+  // const cursor: MazeCoordinate = { x: mazeEntrance.x, y: mazeEntrance.y };
+  let cursors: MazeCoordinate[] = [{ x: mazeEntrance.x, y: mazeEntrance.y }];
   let mazeIsReady = false;
   while (!mazeIsReady) {
-    const possibleMoves = queryPossibleMovements(maze, cursor);
+    const possibleMoves = queryPossibleMovements(maze, cursors[0]);
     if (possibleMoves.length > 0) {
       const move = makeDecision(possibleMoves, noise.next().value);
       if ([Direction.Top, Direction.Bottom].includes(move)) {
-        cursor.y += move === Direction.Top ? -1 : 1;
+        cursors[0].y += move === Direction.Top ? -1 : 1;
       }
       if ([Direction.Right, Direction.Left].includes(move)) {
-        cursor.x += move === Direction.Right ? 1 : -1;
+        cursors[0].x += move === Direction.Right ? 1 : -1;
       }
-      if (![Cell.Exit].includes(getCell(maze, cursor))) {
-        maze = updateMazeCell(maze, { ...cursor, type: Cell.Empty });
+      if (![Cell.Exit].includes(getCell(maze, cursors[0]))) {
+        maze = updateMazeCell(maze, { ...cursors[0], type: Cell.Empty });
       }
     } else {
       // mark current cell as visited and move cursor to previous position
       let replacement = Cell.EmptyVisited;
-      if (getCell(maze, { ...cursor }) === Cell.Exit) {
+      if (getCell(maze, { ...cursors[0] }) === Cell.Exit) {
         replacement = Cell.ExitVisited;
       }
-      if (getCell(maze, { ...cursor }) === Cell.Entrance) {
+      if (getCell(maze, { ...cursors[0] }) === Cell.Entrance) {
         replacement = Cell.EntranceVisited;
       }
 
       maze = updateMazeCell(maze, {
-        ...cursor,
+        ...cursors[0],
         type: replacement,
       });
 
-      const emptySpaces = queryForEmptySpace(maze, cursor);
+      const queryCursorPosition = cursors[0];
+
+      const emptySpaces = queryForEmptySpace(maze, queryCursorPosition);
       if (emptySpaces.length >= 1) {
-        const emptySpaceDirection = emptySpaces.pop() as Direction;
-        if ([Direction.Top, Direction.Bottom].includes(emptySpaceDirection)) {
-          cursor.y += emptySpaceDirection === Direction.Top ? -1 : 1;
-        }
-        if ([Direction.Right, Direction.Left].includes(emptySpaceDirection)) {
-          cursor.x += emptySpaceDirection === Direction.Right ? 1 : -1;
-        }
+        emptySpaces.forEach((emptySpaceDirection, index) => {
+          if (cursors[index] === undefined) {
+            cursors[index] = { ...queryCursorPosition };
+          }
+          if ([Direction.Top, Direction.Bottom].includes(emptySpaceDirection)) {
+            cursors[index].y += emptySpaceDirection === Direction.Top ? -1 : 1;
+          }
+          if ([Direction.Right, Direction.Left].includes(emptySpaceDirection)) {
+            cursors[index].x +=
+              emptySpaceDirection === Direction.Right ? 1 : -1;
+          }
+        });
+      } else if (cursors.length > 1) {
+        cursors.pop();
       } else {
         /// maze is ready
         yield maze;
