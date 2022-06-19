@@ -1,11 +1,6 @@
 import { makeDecision } from './decision';
 import { noiseGenerator } from './noise';
-import {
-  Cell,
-  MazeCoordinate,
-  MazeGeneratorOptions,
-  Direction,
-} from './types';
+import { Cell, MazeCoordinate, MazeGeneratorOptions, Direction } from './types';
 import {
   createEmptyMaze,
   updateMazeCell,
@@ -126,6 +121,22 @@ export function* mazeGenerator({ width, height, seed }: MazeGeneratorOptions) {
     maze = updateMazeCell(maze, { ...entrance, type: Cell.Entrance });
   }
   yield maze;
+  // query for all border empty spaces
+  const allEmptySpaces = queryMaze(maze, Cell.Empty);
+  const entranceOptions = allEmptySpaces.filter(
+    ({ x, y }) => x === 0 || y === 0 || x === width - 1 || y === height - 1
+  );
   // put entrance
+  const mazeEntrance = makeDecision(entranceOptions, noise.next().value);
+  maze = updateMazeCell(maze, { ...mazeEntrance, type: Cell.Entrance });
+  yield maze;
   // put exit
+
+  const exitOptions = entranceOptions.filter(
+    ({ x, y }) => x !== mazeEntrance.x && y !== mazeEntrance.y
+  );
+
+  const mazeExit = makeDecision(exitOptions, noise.next().value);
+  maze = updateMazeCell(maze, { ...mazeExit, type: Cell.Exit });
+  yield maze;
 }
