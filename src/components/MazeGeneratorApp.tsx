@@ -107,7 +107,7 @@ const MazeGeneratorApp: FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [renderSize, setRenderSize] = useState({ width: 600, height: 600 });
-
+  const generatorTimer = useRef<NodeJS.Timer>();
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -140,25 +140,36 @@ const MazeGeneratorApp: FC = () => {
 
   const onGenerateHandle = useCallback(() => {
     setIsGenerating(true);
-    const mazeGen = mazeGenerator({ width, height, seed });
-    let mazeReady = false;
-    const history: Maze[] = [];
-    const timer = setInterval(() => {
-      if (mazeReady) {
-        clearInterval(timer);
-      } else {
-        const mazeStage = mazeGen.next();
-        if (mazeStage.done) {
-          mazeReady = true;
-          setIsGenerating(false);
+  }, []);
+
+  const onCancelGenerateHandle = useCallback(() => {
+    setIsGenerating(false);
+  }, []);
+
+  useEffect(() => {
+    if (isGenerating) {
+      const mazeGen = mazeGenerator({ width, height, seed });
+      let mazeReady = false;
+      const history: Maze[] = [];
+      generatorTimer.current = setInterval(() => {
+        if (mazeReady) {
+          clearInterval(generatorTimer.current);
         } else {
-          history.push(mazeStage.value);
-          setHistory(history);
-          setHistorySelector(history.length - 1);
+          const mazeStage = mazeGen.next();
+          if (mazeStage.done) {
+            mazeReady = true;
+            setIsGenerating(false);
+          } else {
+            history.push(mazeStage.value);
+            setHistory(history);
+            setHistorySelector(history.length - 1);
+          }
         }
-      }
-    }, -1);
-  }, [seed, width, height, history]);
+      }, 0);
+    } else {
+      clearInterval(generatorTimer.current);
+    }
+  }, [isGenerating, seed, width, height]);
 
   return (
     <Wrapper>
@@ -240,9 +251,19 @@ const MazeGeneratorApp: FC = () => {
           />
         </InputWrapper>
         <InputWrapper>
-          <GenerateButton onClick={onGenerateHandle} disabled={isGenerating}>
-            {isGenerating ? 'Generating...' : 'Generate'}
-          </GenerateButton>
+          {!isGenerating ? (
+            <>
+              <GenerateButton onClick={onGenerateHandle}>
+                Generate
+              </GenerateButton>
+            </>
+          ) : (
+            <>
+              <GenerateButton onClick={onCancelGenerateHandle}>
+                Cancel generating
+              </GenerateButton>
+            </>
+          )}
         </InputWrapper>
         {history.length > 0 && (
           <InputWrapper>
