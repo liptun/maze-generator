@@ -40,12 +40,6 @@ const InputWrapper = styled.div`
   grid-gap: 6px;
   margin-bottom: 15px;
 `;
-const InputWrapperHorizontal = styled.div`
-  display: grid;
-  grid-auto-flow: column;
-  grid-gap: 15px;
-  margin-bottom: 15px;
-`;
 
 const inputStyle = css`
   font-family: 'Lato', sans-serif;
@@ -86,33 +80,17 @@ const GenerateButton = styled(Button)`
   }
 `;
 
-const AnimateButton = styled(Button)`
-  background-color: #fabd2f;
-  font-size: 700;
-  color: white;
-  :hover {
-    background-color: #d79921;
-  }
-`;
-
 const MazeGeneratorApp: FC = () => {
   const [seed, setSeed] = useState('test');
-  const [width, setWidth] = useState(32);
-  const [height, setHeight] = useState(32);
-  const [scale, setScale] = useState(16);
+  const [width, setWidth] = useState(256);
+  const [height, setHeight] = useState(256);
+  const [scale, setScale] = useState(4);
   const [maze, setMaze] = useState<Maze>([]);
-  const [history, setHistory] = useState<Maze[]>([]);
-  const [historySelector, setHistorySelector] = useState(0);
-  const [animationDuration, setAnimationDuration] = useState(2);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [renderSize, setRenderSize] = useState({ width: 600, height: 600 });
   const generatorTimer = useRef<NodeJS.Timer>();
   const wrapperRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setMaze(history[historySelector]);
-  }, [history, historySelector]);
+  const mazeGen = useRef<Generator>();
 
   useEffect(() => {
     if (wrapperRef.current) {
@@ -128,42 +106,36 @@ const MazeGeneratorApp: FC = () => {
     setSeed(newSeed);
   }, []);
 
-  const onAnimateHandle = useCallback(() => {
-    setIsAnimating(true);
-    for (let i = 0; i < history.length; i++) {
-      setTimeout(() => {
-        setHistorySelector(i);
-        i === history.length - 1 && setIsAnimating(false);
-      }, i * ((animationDuration * 1000) / history.length));
-    }
-  }, [history, animationDuration]);
-
   const onGenerateHandle = useCallback(() => {
     setIsGenerating(true);
-  }, []);
+    setMaze([])
+    mazeGen.current = mazeGenerator({ width, height, seed });
+  }, [width, height, seed]);
 
   const onCancelGenerateHandle = useCallback(() => {
     setIsGenerating(false);
   }, []);
 
   useEffect(() => {
-    if (isGenerating) {
-      const mazeGen = mazeGenerator({ width, height, seed });
+    if (isGenerating && mazeGen.current !== undefined) {
       let mazeReady = false;
-      const history: Maze[] = [];
       generatorTimer.current = setInterval(() => {
         if (mazeReady) {
           clearInterval(generatorTimer.current);
         } else {
-          const mazeStage = mazeGen.next();
-          if (mazeStage.done) {
-            mazeReady = true;
-            setIsGenerating(false);
-          } else {
-            history.push(mazeStage.value);
-            setHistory(history);
-            setHistorySelector(history.length - 1);
+          let bulk = 1000;
+          let mazeDraft: Maze = [];
+          while (!mazeReady && bulk > 0) {
+            const mazeStage = mazeGen.current?.next();
+            bulk--;
+            if (mazeStage?.done) {
+              mazeReady = true;
+              setIsGenerating(false);
+            } else {
+              mazeDraft = mazeStage?.value as Maze;
+            }
           }
+          setMaze(mazeDraft);
         }
       }, 0);
     } else {
@@ -188,48 +160,6 @@ const MazeGeneratorApp: FC = () => {
           <Input value={seed} onChange={(e) => setSeed(e.target.value)} />
           <Button onClick={() => onRandomSeedHandle()}>random seed</Button>
         </InputWrapper>
-        <InputWrapperHorizontal>
-          <Button
-            onClick={() => {
-              setWidth(8);
-              setHeight(8);
-            }}
-          >
-            8
-          </Button>
-          <Button
-            onClick={() => {
-              setWidth(16);
-              setHeight(16);
-            }}
-          >
-            16
-          </Button>
-          <Button
-            onClick={() => {
-              setWidth(32);
-              setHeight(32);
-            }}
-          >
-            32
-          </Button>
-          <Button
-            onClick={() => {
-              setWidth(64);
-              setHeight(64);
-            }}
-          >
-            64
-          </Button>
-          <Button
-            onClick={() => {
-              setWidth(128);
-              setHeight(128);
-            }}
-          >
-            128
-          </Button>
-        </InputWrapperHorizontal>
         <InputWrapper>
           <label>Width: {width}</label>
           <input
@@ -265,54 +195,6 @@ const MazeGeneratorApp: FC = () => {
             </>
           )}
         </InputWrapper>
-        {history.length > 0 && (
-          <InputWrapper>
-            <label>
-              Step {historySelector + 1} from {history.length}
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={history.length - 1}
-              value={historySelector}
-              onChange={(e) => setHistorySelector(Number(e.target.value))}
-            />
-            <InputWrapperHorizontal>
-              <Button
-                onClick={() => setHistorySelector(historySelector - 1)}
-                disabled={historySelector <= 0}
-              >
-                prev
-              </Button>
-              <Button
-                onClick={() => setHistorySelector(historySelector + 1)}
-                disabled={historySelector >= history.length - 1}
-              >
-                next
-              </Button>
-            </InputWrapperHorizontal>
-          </InputWrapper>
-        )}
-        {history.length > 0 && (
-          <>
-            <Title>Animate</Title>
-            <InputWrapper>
-              <label>Animation duration: {animationDuration}</label>
-              <input
-                type="range"
-                min={1}
-                max={32}
-                value={animationDuration}
-                onChange={(e) => setAnimationDuration(Number(e.target.value))}
-              />
-            </InputWrapper>
-            <InputWrapper>
-              <AnimateButton onClick={onAnimateHandle} disabled={isAnimating}>
-                Animate
-              </AnimateButton>
-            </InputWrapper>
-          </>
-        )}
         <Title>Rendering options</Title>
         <InputWrapper>
           <label>Scale: {scale}</label>
