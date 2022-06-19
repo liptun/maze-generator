@@ -1,7 +1,6 @@
 import { makeDecision } from './decision';
 import { noiseGenerator } from './noise';
 import {
-  MazeCell,
   Cell,
   MazeCoordinate,
   MazeGeneratorOptions,
@@ -22,70 +21,42 @@ export function* mazeGenerator({ width, height, seed }: MazeGeneratorOptions) {
   // create empty maze
   let maze = createEmptyMaze({ width, height });
   yield maze;
-  // put one entrance
-  const entranceWallOptions = [
+
+  const startingWallOptions = [
     Direction.Top,
     Direction.Right,
     Direction.Bottom,
     Direction.Left,
   ];
-  const entranceWall = makeDecision(entranceWallOptions, noise.next().value);
-  const entranceWallWidth = [Direction.Top, Direction.Bottom].includes(
-    entranceWall
+  const startingWall = makeDecision(startingWallOptions, noise.next().value);
+  const startingWallWidth = [Direction.Top, Direction.Bottom].includes(
+    startingWall
   )
     ? width
     : height;
-  const entranceOffsetOptions = Array(entranceWallWidth)
+  const startingOffsetOptions = Array(startingWallWidth)
     .fill(0)
     .map((_, i) => i);
 
   const entranceOffset = makeDecision(
-    entranceOffsetOptions,
+    startingOffsetOptions,
     noise.next().value
   );
-  const mazeEntrance: MazeCell = {
+  const mazeStartingPoint: MazeCoordinate = {
     x: 0,
     y: 0,
-    type: Cell.Entrance,
   };
 
-  if ([Direction.Top, Direction.Bottom].includes(entranceWall)) {
-    mazeEntrance.x = entranceOffset;
-    mazeEntrance.y = entranceWall === Direction.Top ? 0 : height - 1;
+  if ([Direction.Top, Direction.Bottom].includes(startingWall)) {
+    mazeStartingPoint.x = entranceOffset;
+    mazeStartingPoint.y = startingWall === Direction.Top ? 0 : height - 1;
   }
-  if ([Direction.Right, Direction.Left].includes(entranceWall)) {
-    mazeEntrance.x = entranceWall === Direction.Left ? 0 : width - 1;
-    mazeEntrance.y = entranceOffset;
+  if ([Direction.Right, Direction.Left].includes(startingWall)) {
+    mazeStartingPoint.x = startingWall === Direction.Left ? 0 : width - 1;
+    mazeStartingPoint.y = entranceOffset;
   }
-
-  maze = updateMazeCell(maze, mazeEntrance);
-  yield maze;
-
-  // put one exit
-  const mazeExit: MazeCell = {
-    x: 0,
-    y: 0,
-    type: Cell.Exit,
-  };
-
-  const exitOffsetOptions = [...entranceOffsetOptions];
-  const exitOffset = makeDecision(exitOffsetOptions, noise.next().value);
-
-  if ([Direction.Top, Direction.Bottom].includes(entranceWall)) {
-    mazeExit.x = exitOffset;
-    mazeExit.y = entranceWall === Direction.Top ? height - 1 : 0;
-  }
-  if ([Direction.Right, Direction.Left].includes(entranceWall)) {
-    mazeExit.x = entranceWall === Direction.Left ? width - 1 : 0;
-    mazeExit.y = exitOffset;
-  }
-
-  maze = updateMazeCell(maze, mazeExit);
-  yield maze;
-
   // start walking in random possible direction until no move is possible
-  // const cursor: MazeCoordinate = { x: mazeEntrance.x, y: mazeEntrance.y };
-  let cursors: MazeCoordinate[] = [{ x: mazeEntrance.x, y: mazeEntrance.y }];
+  const cursors: MazeCoordinate[] = [{ ...mazeStartingPoint }];
   let mazeIsReady = false;
   while (!mazeIsReady) {
     const possibleMoves = queryPossibleMovements(maze, cursors[0]);
@@ -155,4 +126,6 @@ export function* mazeGenerator({ width, height, seed }: MazeGeneratorOptions) {
     maze = updateMazeCell(maze, { ...entrance, type: Cell.Entrance });
   }
   yield maze;
+  // put entrance
+  // put exit
 }
