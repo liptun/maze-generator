@@ -4,9 +4,7 @@ export enum Cell {
   Outside = -1,
   Wall = '#',
   Entrance = 's',
-  EntranceVisited = 'S',
   Exit = 'e',
-  ExitVisited = 'E',
 }
 
 export interface MazeCoordinate {

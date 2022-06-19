@@ -46,14 +46,8 @@ const MazeCanvas: FC<Props> = ({
             if (cell === Cell.Entrance) {
               ctx.fillStyle = '#00FF00';
             }
-            if (cell === Cell.EntranceVisited) {
-              ctx.fillStyle = '#008800';
-            }
             if (cell === Cell.Exit) {
               ctx.fillStyle = '#FF0000';
-            }
-            if (cell === Cell.ExitVisited) {
-              ctx.fillStyle = '#880000';
             }
             ctx.fillRect(x * scale, y * scale, scale, scale);
           });

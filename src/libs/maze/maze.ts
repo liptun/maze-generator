@@ -68,17 +68,9 @@ export function* mazeGenerator({ width, height, seed }: MazeGeneratorOptions) {
       }
     } else {
       // mark current cell as visited and move cursor to previous position
-      let replacement = Cell.EmptyVisited;
-      if (getCell(maze, { ...cursors[0] }) === Cell.Exit) {
-        replacement = Cell.ExitVisited;
-      }
-      if (getCell(maze, { ...cursors[0] }) === Cell.Entrance) {
-        replacement = Cell.EntranceVisited;
-      }
-
       maze = updateMazeCell(maze, {
         ...cursors[0],
-        type: replacement,
+        type: Cell.EmptyVisited,
       });
 
       const queryCursorPosition = cursors[0];
@@ -112,14 +104,6 @@ export function* mazeGenerator({ width, height, seed }: MazeGeneratorOptions) {
   visited.forEach((cell) => {
     maze = updateMazeCell(maze, { ...cell, type: Cell.Empty });
   });
-  const exit = queryMaze(maze, Cell.ExitVisited).pop();
-  if (exit) {
-    maze = updateMazeCell(maze, { ...exit, type: Cell.Exit });
-  }
-  const entrance = queryMaze(maze, Cell.EntranceVisited).pop();
-  if (entrance) {
-    maze = updateMazeCell(maze, { ...entrance, type: Cell.Entrance });
-  }
   yield maze;
   // query for all border empty spaces
   const allEmptySpaces = queryMaze(maze, Cell.Empty);

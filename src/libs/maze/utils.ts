@@ -45,42 +45,42 @@ export const queryPossibleMovements = (
   { x, y }: MazeCoordinate
 ): Direction[] => {
   const result: Direction[] = [];
-  const free = Cell.Wall;
-  const freeSpaces = [free, Cell.Outside, Cell.Exit];
+  const freeSpaces = [Cell.Wall];
+  const freeSurroundings = [...freeSpaces, Cell.Outside];
   // top
-  if ([free, Cell.Exit].includes(getCell(maze, { x, y: y - 1 }))) {
-    [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y - 1 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y - 1 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y - 2 })) &&
-      [...freeSpaces].includes(getCell(maze, { x, y: y - 2 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y - 2 })) &&
+  if (freeSpaces.includes(getCell(maze, { x, y: y - 1 }))) {
+    [...freeSurroundings].includes(getCell(maze, { x: x - 1, y: y - 1 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x + 1, y: y - 1 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x - 1, y: y - 2 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x, y: y - 2 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x + 1, y: y - 2 })) &&
       result.push(Direction.Top);
   }
   // right
-  if ([free, Cell.Exit].includes(getCell(maze, { x: x + 1, y }))) {
-    [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y - 1 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y + 1 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x + 2, y: y - 1 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x + 2, y })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x + 2, y: y + 1 })) &&
+  if (freeSpaces.includes(getCell(maze, { x: x + 1, y }))) {
+    [...freeSurroundings].includes(getCell(maze, { x: x + 1, y: y - 1 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x + 1, y: y + 1 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x + 2, y: y - 1 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x + 2, y })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x + 2, y: y + 1 })) &&
       result.push(Direction.Right);
   }
   // bottom
-  if ([free, Cell.Exit].includes(getCell(maze, { x, y: y + 1 }))) {
-    [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y + 1 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y + 1 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y + 2 })) &&
-      [...freeSpaces].includes(getCell(maze, { x, y: y + 2 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x + 1, y: y + 2 })) &&
+  if (freeSpaces.includes(getCell(maze, { x, y: y + 1 }))) {
+    [...freeSurroundings].includes(getCell(maze, { x: x - 1, y: y + 1 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x + 1, y: y + 1 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x - 1, y: y + 2 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x, y: y + 2 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x + 1, y: y + 2 })) &&
       result.push(Direction.Bottom);
   }
   // left
-  if ([free, Cell.Exit].includes(getCell(maze, { x: x - 1, y }))) {
-    [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y - 1 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x - 1, y: y + 1 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x - 2, y: y - 1 })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x - 2, y })) &&
-      [...freeSpaces].includes(getCell(maze, { x: x - 2, y: y + 1 })) &&
+  if (freeSpaces.includes(getCell(maze, { x: x - 1, y }))) {
+    [...freeSurroundings].includes(getCell(maze, { x: x - 1, y: y - 1 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x - 1, y: y + 1 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x - 2, y: y - 1 })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x - 2, y })) &&
+      [...freeSurroundings].includes(getCell(maze, { x: x - 2, y: y + 1 })) &&
       result.push(Direction.Left);
   }
 
@@ -93,7 +93,7 @@ export const queryForEmptySpace = (
 ): Direction[] => {
   const results: Direction[] = [];
 
-  const emptySpaces = [Cell.Empty, Cell.Exit, Cell.Entrance];
+  const emptySpaces = [Cell.Empty];
 
   if ([...emptySpaces].includes(getCell(maze, { x, y: y - 1 }))) {
     results.push(Direction.Top);
