@@ -143,18 +143,22 @@ const MazeGeneratorApp: FC = () => {
     const mazeGen = mazeGenerator({ width, height, seed });
     let mazeReady = false;
     const history: Maze[] = [];
-    while (!mazeReady) {
-      const mazeStage = mazeGen.next();
-      if (mazeStage.done) {
-        mazeReady = true;
+    const timer = setInterval(() => {
+      if (mazeReady) {
+        clearInterval(timer);
       } else {
-        history.push(mazeStage.value);
+        const mazeStage = mazeGen.next();
+        if (mazeStage.done) {
+          mazeReady = true;
+          setIsGenerating(false);
+        } else {
+          history.push(mazeStage.value);
+          setHistory(history);
+          setHistorySelector(history.length - 1);
+        }
       }
-    }
-    setHistory(history);
-    setHistorySelector(history.length - 1);
-    setIsGenerating(false);
-  }, [seed, width, height]);
+    }, -1);
+  }, [seed, width, height, history]);
 
   return (
     <Wrapper>
@@ -221,7 +225,7 @@ const MazeGeneratorApp: FC = () => {
             value={width}
             type="range"
             min={3}
-            max={128}
+            max={512}
             onChange={(e) => setWidth(Number(e.target.value))}
           />
         </InputWrapper>
@@ -231,13 +235,13 @@ const MazeGeneratorApp: FC = () => {
             value={height}
             type="range"
             min={3}
-            max={128}
+            max={512}
             onChange={(e) => setHeight(Number(e.target.value))}
           />
         </InputWrapper>
         <InputWrapper>
           <GenerateButton onClick={onGenerateHandle} disabled={isGenerating}>
-            Generate
+            {isGenerating ? 'Generating...' : 'Generate'}
           </GenerateButton>
         </InputWrapper>
         {history.length > 0 && (
