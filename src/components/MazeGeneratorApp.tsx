@@ -157,7 +157,7 @@ const MazeGeneratorApp: FC = () => {
         <Title>Maze generator options</Title>
         <InputWrapper>
           <label>Seed:</label>
-          <Input value={seed} onChange={(e) => setSeed(e.target.value)} />
+          <Input value={seed} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSeed(e.target.value)} />
           <Button onClick={() => onRandomSeedHandle()}>random seed</Button>
         </InputWrapper>
         <InputWrapper>
